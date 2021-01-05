@@ -48,8 +48,25 @@ app.use(jwt({
 
 
 app.post('/hasura/approve-user', (request, response, next) => {
+  const models = require('./models');
+
   console.log('/hasura/approve-user ==> ' + JSON.stringify(request.body));
-  response.json({status: 'OK'});
+  const userId = request.body.input.id;
+  models.users.update(
+    { status: 'approved' },
+    { where: { id: userId } }
+  )
+  .then(result => {
+    if (result[0] ===1) {
+      response.send({success: 'User Approved!'});
+    }
+    else {
+      response.status(400).send({ error: 'Unable to Approve User'});
+    }
+  })
+  .catch(next);
+
+
 });
 
 app.use('/forest', (request, response, next) => {
