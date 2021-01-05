@@ -16,6 +16,8 @@
     "express": "~4.17.1",
     "express-jwt": "5.3.1",
     "forest-express-sequelize": "^6.0.0",
+    "graphql": "^15.4.0",
+    "graphql-request": "^3.4.0",
     "morgan": "1.9.1",
     "pg": "~8.2.2",
     "require-all": "^3.0.0",

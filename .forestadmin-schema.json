@@ -1029,7 +1029,20 @@
       "validations": []
     }],
     "segments": [],
-    "actions": []
+    "actions": [{
+      "name": "Approve",
+      "type": "single",
+      "baseUrl": null,
+      "endpoint": "/forest/actions/approve-user",
+      "httpMethod": "POST",
+      "redirect": null,
+      "download": false,
+      "fields": [],
+      "hooks": {
+        "load": false,
+        "change": []
+      }
+    }]
   }],
   "meta": {
     "database_type": "postgres",

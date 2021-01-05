@@ -2,6 +2,9 @@ const express = require('express');
 const { PermissionMiddlewareCreator } = require('forest-express-sequelize');
 const { users } = require('../models');
 
+const { request, gql } = require('graphql-request');
+const GRAPHQL_URL = 'https://integral-mantis-19.hasura.app/v1/graphql';
+
 const router = express.Router();
 const permissionMiddlewareCreator = new PermissionMiddlewareCreator('users');
 
@@ -56,5 +59,26 @@ router.delete('/users', permissionMiddlewareCreator.delete(), (request, response
   // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#delete-a-list-of-records
   next();
 });
+
+router.post('/actions/approve-user', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+  const recordId = req.body.data.attributes.ids[0];
+
+   const queryFields = 'status';
+
+  const query = gql`
+    mutation activateUser {
+      activateUser(id: "${recordId}") {
+				${queryFields}
+      }
+    }`;
+    
+  request(GRAPHQL_URL, query).then((data) => {
+    const recordSerializer = new RecordSerializer({ name: COLLECTION_NAME });
+    return recordSerializer.serialize(data[`update_${COLLECTION_NAME}_by_pk`]);
+  })
+  .then((recordsSerialized) => res.send(recordsSerialized))
+  .catch(next);
+});
+
 
 module.exports = router;

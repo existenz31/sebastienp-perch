@@ -14,7 +14,7 @@ const {
 
 const app = express();
 
-let allowedOrigins = [/\.forestadmin\.com$/];
+let allowedOrigins = [/\.forestadmin\.com$/, /\.hasura\.app/];
 
 if (process.env.CORS_ORIGINS) {
   allowedOrigins = allowedOrigins.concat(process.env.CORS_ORIGINS.split(','));
@@ -26,6 +26,14 @@ const corsConfig = {
   maxAge: 86400, // NOTICE: 1 day
   credentials: true,
 };
+
+app.use(morgan('tiny'));
+app.use('/graphql/approve-user', (request, response, next) => {
+  console.log('/graphql/approve-user => ' + request)
+  return null;
+});
+
+
 
 app.use(morgan('tiny'));
 app.use('/forest/authentication', cors({
