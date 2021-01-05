@@ -47,6 +47,7 @@ app.use(jwt({
 }));
 
 
+/* Handle Hasura Actions */
 app.post('/hasura/approve-user', (request, response, next) => {
   const models = require('./models');
 
@@ -58,16 +59,16 @@ app.post('/hasura/approve-user', (request, response, next) => {
   )
   .then(result => {
     if (result[0] ===1) {
-      response.send({success: 'User Approved!'});
+      response.send({status: 'OK'});
     }
     else {
-      response.status(400).send({ error: 'Unable to Approve User'});
+      response.send({status: 'FAILURE'});
     }
   })
   .catch(next);
-
-
 });
+
+/* End of Hasura Section */
 
 app.use('/forest', (request, response, next) => {
   if (PUBLIC_ROUTES.includes(request.url)) {
