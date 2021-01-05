@@ -14,7 +14,7 @@ const {
 
 const app = express();
 
-let allowedOrigins = [/\.forestadmin\.com$/, /\.hasura\.app/];
+let allowedOrigins = [/\.forestadmin\.com$/];
 
 if (process.env.CORS_ORIGINS) {
   allowedOrigins = allowedOrigins.concat(process.env.CORS_ORIGINS.split(','));
@@ -26,14 +26,6 @@ const corsConfig = {
   maxAge: 86400, // NOTICE: 1 day
   credentials: true,
 };
-
-app.use(morgan('tiny'));
-app.post('/hasura/approve-user', (request, response, next) => {
-  console.log('/hasura/approve-user ==> ' + JSON.stringify(request.body));
-  response.send('OK');
-});
-
-
 
 app.use(morgan('tiny'));
 app.use('/forest/authentication', cors({
@@ -53,6 +45,12 @@ app.use(jwt({
   secret: process.env.FOREST_AUTH_SECRET,
   credentialsRequired: false,
 }));
+
+
+app.post('/hasura/approve-user', (request, response, next) => {
+  console.log('/hasura/approve-user ==> ' + JSON.stringify(request.body));
+  response.send('OK');
+});
 
 app.use('/forest', (request, response, next) => {
   if (PUBLIC_ROUTES.includes(request.url)) {
