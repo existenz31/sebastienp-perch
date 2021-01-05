@@ -13,7 +13,7 @@ class MarqetaService {
     });
   } 
 
-  #toCamelCase(field){
+  toCamelCase(field){
     let order = '';
     let fieldName = field;
     if (field.startsWith('-')) {
@@ -27,7 +27,7 @@ class MarqetaService {
   async getUsers (query) {
     const pageSize= parseInt(query.page.size) || 20;
     const pageNumber= parseInt(query.page.number)-1;
-    const sortBy = query.sort ? this.#toCamelCase(query.sort) : null;
+    const sortBy = query.sort ? this.toCamelCase(query.sort) : null;
     let fields = query.fields.marqetaUsers.split(',');
     if (fields && !fields.includes('token')) {
       fields.push('token'); // token is required to get the ID
