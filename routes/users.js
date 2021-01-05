@@ -96,7 +96,7 @@ router.post('/actions/suspend-user', permissionMiddlewareCreator.smartAction(), 
     }`;
     
   request(GRAPHQL_URL, query).then((result) => {
-    if (result.activateUser.status === "OK") {
+    if (result.suspendUser.status === "OK") {
       res.send({success: 'User Suspended'});
     }
     else {
