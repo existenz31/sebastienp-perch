@@ -29,7 +29,7 @@ const corsConfig = {
 
 app.use(morgan('tiny'));
 app.post('/hasura/approve-user', (request, response, next) => {
-  console.log('/graphql/approve-user => ' + request)
+  console.log('/graphql/approve-user => ' + JSON.stringify(request.body))
   return null;
 });
 
