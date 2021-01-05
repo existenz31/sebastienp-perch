@@ -1,7 +1,8 @@
-const { default: axios } = require('axios');
 const express = require('express');
 const { PermissionMiddlewareCreator, RecordSerializer } = require('forest-express-sequelize');
-const models = require('../models');
+
+const MarqetaService = require('../services/marqeta-service');
+let marqetaService = new MarqetaService(process.env.MARQETA_BASE_URL, process.env.MARQETA_TOKEN);
 
 const MODEL_NAME = 'marqetaUsers';
 
@@ -10,23 +11,22 @@ const permissionMiddlewareCreator = new PermissionMiddlewareCreator(`${MODEL_NAM
 
 // Get a list of Users
 router.get(`/${MODEL_NAME}`, permissionMiddlewareCreator.list(), (request, response, next) => {
-  next();
+
+  marqetaService.getUsers(request.query)
+  .then(async result => {
+    const recordSerializer = new RecordSerializer({ name: MODEL_NAME });
+    const recordsSerialized = await recordSerializer.serialize(result.list);
+    response.send({ ...recordsSerialized, meta:{ count: result.count }});  
+  })
+  .catch(next);
+
 });
 
 // Get a User
 router.get(`/${MODEL_NAME}/:recordId`, permissionMiddlewareCreator.details(), (request, response, next) => {
   const recordId = request.params.recordId;
-  const instance = axios.create({
-    baseURL: process.env.MARQETA_BASE_URL,
-    //timeout: 1000,
-    headers: {'Authorization': 'Basic ' + process.env.MARQETA_TOKEN}
-  })
-
-  instance.get(`/users/${recordId}`)
-  .then(async result => {
-    if (!result.data) return null;
-    marqetaUser = result.data;
-    marqetaUser.id = marqetaUser.token; // required for FA UI
+  marqetaService.getUser(recordId)
+  .then(async marqetaUser => {
     const recordSerializer = new RecordSerializer({ name: MODEL_NAME });
     const recordSerialized = await recordSerializer.serialize(marqetaUser);
     response.send(recordSerialized);
