@@ -1042,6 +1042,19 @@
         "load": false,
         "change": []
       }
+    }, {
+      "name": "Suspend",
+      "type": "single",
+      "baseUrl": null,
+      "endpoint": "/forest/actions/suspend-user",
+      "httpMethod": "POST",
+      "redirect": null,
+      "download": false,
+      "fields": [],
+      "hooks": {
+        "load": false,
+        "change": []
+      }
     }]
   }],
   "meta": {

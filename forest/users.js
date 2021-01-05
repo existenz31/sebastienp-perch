@@ -8,6 +8,10 @@ collection('users', {
     name: 'Approve',
     type: 'single',
     endpoint: '/forest/actions/approve-user',
+  },{
+    name: 'Suspend',
+    type: 'single',
+    endpoint: '/forest/actions/suspend-user',
   }],
   fields: [
     {

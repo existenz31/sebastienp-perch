@@ -68,6 +68,25 @@ app.post('/hasura/approve-user', (request, response, next) => {
   .catch(next);
 });
 
+app.post('/hasura/suspend-user', (request, response, next) => {
+  const models = require('./models');
+
+  console.log('/hasura/suspend-user ==> ' + JSON.stringify(request.body));
+  const userId = request.body.input.id;
+  models.users.update(
+    { status: 'suspended' },
+    { where: { id: userId } }
+  )
+  .then(result => {
+    if (result[0] ===1) {
+      response.send({status: 'OK'});
+    }
+    else {
+      response.send({status: 'FAILURE'});
+    }
+  })
+  .catch(next);
+});
 /* End of Hasura Section */
 
 app.use('/forest', (request, response, next) => {

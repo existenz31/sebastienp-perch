@@ -1,5 +1,5 @@
 const express = require('express');
-const { PermissionMiddlewareCreator } = require('forest-express-sequelize');
+const { PermissionMiddlewareCreator, RecordSerializer } = require('forest-express-sequelize');
 const { users } = require('../models');
 
 const { request, gql } = require('graphql-request');
@@ -72,13 +72,38 @@ router.post('/actions/approve-user', permissionMiddlewareCreator.smartAction(), 
       }
     }`;
     
-  request(GRAPHQL_URL, query).then((data) => {
-    const recordSerializer = new RecordSerializer({ name: COLLECTION_NAME });
-    return recordSerializer.serialize(data[`update_${COLLECTION_NAME}_by_pk`]);
+  request(GRAPHQL_URL, query).then((result) => {
+    if (result.activateUser.status === "OK") {
+      res.send({success: 'User Approved'});
+    }
+    else {
+      res.status(400).send({error: 'Unable to Approve the User!'});
+    }
   })
-  .then((recordsSerialized) => res.send(recordsSerialized))
-  .catch(next);
+  .catch(next);    
 });
 
+router.post('/actions/suspend-user', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+  const recordId = req.body.data.attributes.ids[0];
+
+   const queryFields = 'status';
+
+  const query = gql`
+    mutation suspendUser {
+      suspendUser(id: "${recordId}") {
+				${queryFields}
+      }
+    }`;
+    
+  request(GRAPHQL_URL, query).then((result) => {
+    if (result.activateUser.status === "OK") {
+      res.send({success: 'User Suspended'});
+    }
+    else {
+      res.status(400).send({error: 'Unable to Suspend the User!'});
+    }
+  })
+  .catch(next);    
+});
 
 module.exports = router;
