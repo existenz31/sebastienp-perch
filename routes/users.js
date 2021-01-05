@@ -1,9 +1,29 @@
 const express = require('express');
-const { PermissionMiddlewareCreator, RecordSerializer } = require('forest-express-sequelize');
+const { PermissionMiddlewareCreator } = require('forest-express-sequelize');
 const { users } = require('../models');
 
-const { request, gql } = require('graphql-request');
 const GRAPHQL_URL = 'https://integral-mantis-19.hasura.app/v1/graphql';
+
+/* Dependencies for graphql-request */
+const { request, gql } = require('graphql-request');
+
+/* Dependencies for apollo-client */
+const {ApolloClient} = require('apollo-boost');
+const fetch = require('cross-fetch/polyfill').fetch;
+const createHttpLink = require('apollo-link-http').createHttpLink;
+const InMemoryCache = require('apollo-cache-inmemory').InMemoryCache;
+const gqlApollo = require('graphql-tag');
+
+/* Init the Apollo Client */
+const clientApollo = new ApolloClient({
+  link: createHttpLink({
+      uri: GRAPHQL_URL,
+      fetch: fetch
+  }),
+  cache: new InMemoryCache()
+});
+
+
 
 const router = express.Router();
 const permissionMiddlewareCreator = new PermissionMiddlewareCreator('users');
@@ -101,6 +121,31 @@ router.post('/actions/suspend-user', permissionMiddlewareCreator.smartAction(), 
     }
     else {
       res.status(400).send({error: 'Unable to Suspend the User!'});
+    }
+  })
+  .catch(next);    
+});
+
+
+router.post('/actions/approve-user-apollo', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+  const recordId = req.body.data.attributes.ids[0];
+
+  const queryFields = 'status';
+
+  const query = gqlApollo`
+    mutation activateUser {
+      activateUser(id: "${recordId}") {
+				${queryFields}
+      }
+    }`;
+
+  clientApollo.mutate({mutation: query})
+  .then((result) => {
+    if (result.data.activateUser.status === "OK") { // With Apollo Client, result.data.XXXX
+      res.send({success: 'User Approved'});
+    }
+    else {
+      res.status(400).send({error: 'Unable to Approve the User!'});
     }
   })
   .catch(next);    
