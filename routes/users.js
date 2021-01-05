@@ -8,11 +8,9 @@ const GRAPHQL_URL = 'https://integral-mantis-19.hasura.app/v1/graphql';
 const { request, gql } = require('graphql-request');
 
 /* Dependencies for apollo-client */
-const {ApolloClient} = require('apollo-boost');
-const fetch = require('cross-fetch/polyfill').fetch;
-const createHttpLink = require('apollo-link-http').createHttpLink;
-const InMemoryCache = require('apollo-cache-inmemory').InMemoryCache;
-const gqlApollo = require('graphql-tag');
+const {ApolloClient, InMemoryCache, createHttpLink} = require('@apollo/client/core');
+const gqlApollo = require('@apollo/client/core').gql;
+const {fetch} = require('cross-fetch/polyfill');
 
 /* Init the Apollo Client */
 const clientApollo = new ApolloClient({
@@ -20,6 +18,7 @@ const clientApollo = new ApolloClient({
       uri: GRAPHQL_URL,
       fetch: fetch
   }),
+  uri: GRAPHQL_URL,
   cache: new InMemoryCache()
 });
 
@@ -80,7 +79,7 @@ router.delete('/users', permissionMiddlewareCreator.delete(), (request, response
   next();
 });
 
-router.post('/actions/approve-user', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+router.post('/actions/approve-user-request', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
   const recordId = req.body.data.attributes.ids[0];
 
    const queryFields = 'status';
@@ -127,7 +126,7 @@ router.post('/actions/suspend-user', permissionMiddlewareCreator.smartAction(), 
 });
 
 
-router.post('/actions/approve-user-apollo', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+router.post('/actions/approve-user', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
   const recordId = req.body.data.attributes.ids[0];
 
   const queryFields = 'status';
