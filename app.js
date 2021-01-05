@@ -49,7 +49,7 @@ app.use(jwt({
 
 app.post('/hasura/approve-user', (request, response, next) => {
   console.log('/hasura/approve-user ==> ' + JSON.stringify(request.body));
-  response.send('OK');
+  response.json({status: 'OK'});
 });
 
 app.use('/forest', (request, response, next) => {
