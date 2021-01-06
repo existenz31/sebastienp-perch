@@ -87,6 +87,9 @@ class DwollaService {
     if (fields && !fields.includes('id')) {
       fields.push('id'); // id is required to get the ID
     }
+    if (fields && !fields.includes('balance') && fields.includes('balanceReadable')) {
+      fields.push('balance'); // balance is required for the amountReadable Smart Field
+    }    
     return this.client.auth.client()
     .then(appToken => appToken.get(`customers/${recordId}/funding-sources`))
     .then(result => {
@@ -111,6 +114,9 @@ class DwollaService {
     let fields = query.fields.dwollaTransfers.split(',');
     if (fields && !fields.includes('id')) {
       fields.push('id'); // id is required to get the ID
+    }
+    if (fields && !fields.includes('amount') && fields.includes('amountReadable')) {
+      fields.push('amount'); // amount is required for the amountReadable Smart Field
     }
 
     // Filtering not supported yet on related data (hasMany)
