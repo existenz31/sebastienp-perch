@@ -106,6 +106,16 @@ class DwollaService {
 
   };
 
+  getFundingSource (recordId) {
+    return this.client.auth.client()
+    .then(appToken => appToken.get(`funding-sources/${recordId}`))
+    .then(result => {
+      if (!result.body) return null;
+      let fundingSource = result.body;
+      return fundingSource;
+    });    
+  };
+
   getCustomerTransfers (recordId, query) {
     const limit = parseInt(query.page.size) || 20;
     const offset = (parseInt(query.page.number) - 1) * limit;
@@ -153,6 +163,17 @@ class DwollaService {
     });
 
   };
+
+  getTransfer (recordId) {
+    return this.client.auth.client()
+    .then(appToken => appToken.get(`transfers/${recordId}`))
+    .then(result => {
+      if (!result.body) return null;
+      let fundingSource = result.body;
+      return fundingSource;
+    });    
+  };
+
 
 }
 

@@ -26,9 +26,9 @@ router.get(`/${MODEL_NAME}`, permissionMiddlewareCreator.list(), (request, respo
 router.get(`/${MODEL_NAME}/:recordId`, permissionMiddlewareCreator.details(), (request, response, next) => {
   const recordId = request.params.recordId;
   dwollaService.getCustomer(recordId)
-  .then(async dwollaCustomer => {
+  .then(async record => {
     const recordSerializer = new RecordSerializer({ name: MODEL_NAME });
-    const recordSerialized = await recordSerializer.serialize(dwollaCustomer);
+    const recordSerialized = await recordSerializer.serialize(record);
     response.send(recordSerialized);
   })
   .catch(next);
