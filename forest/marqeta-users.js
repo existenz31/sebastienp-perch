@@ -40,6 +40,12 @@ collection('marqetaUsers', {
       isSortable: true,
     },
     {
+      field: 'fullName',
+      type: 'String',
+      get: (user) => {
+        return user.first_name + ' ' + user.last_name;
+      },
+    }, {
       field: 'birth_date',
       type: 'Dateonly',
       isSortable: true,

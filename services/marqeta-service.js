@@ -1,7 +1,7 @@
 "use strict";
 
 const { default: axios } = require('axios');
-
+ 
 class MarqetaService {
   constructor(baseURL, appToken, adminAccessToken) {
     this.baseURL = baseURL;
