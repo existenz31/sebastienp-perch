@@ -2,7 +2,7 @@ const express = require('express');
 const { PermissionMiddlewareCreator, RecordSerializer } = require('forest-express-sequelize');
 
 const MarqetaService = require('../services/marqeta-service');
-let marqetaService = new MarqetaService(process.env.MARQETA_BASE_URL, process.env.MARQETA_TOKEN);
+let marqetaService = new MarqetaService(process.env.MARQETA_BASE_URL, process.env.MARQETA_APPLICATION_TOKEN, process.env.MARQETA_ADMIN_ACCESS_TOKEN);
 
 const MODEL_NAME = 'marqetaUsers';
 

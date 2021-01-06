@@ -3,13 +3,16 @@
 const { default: axios } = require('axios');
 
 class MarqetaService {
-  constructor(baseURL, token) {
+  constructor(baseURL, appToken, adminAccessToken) {
     this.baseURL = baseURL;
-    this.token = token;
     this.instance = axios.create({
       baseURL: this.baseURL,
       //timeout: 1000,
-      headers: {'Authorization': 'Basic ' + this.token}
+      //headers: {'Authorization': 'Basic ' + this.token},
+      auth : {
+        username: appToken,
+        password: adminAccessToken,
+      },
     });
   } 
 
