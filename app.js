@@ -6,13 +6,19 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('express-jwt');
 const morgan = require('morgan');
+const { errorHandler, logger } = require('forest-express');
 const {
-  errorHandler,
   ensureAuthenticated,
   PUBLIC_ROUTES,
-} = require('forest-express-sequelize');
+} = require('forest-express-mongoose');
 
 const app = express();
+
+app.use(morgan('tiny'));
+app.use(bodyParser.json({ limit: "5mb" })); // Important here, max file size
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
 let allowedOrigins = [/\.forestadmin\.com$/];
 
@@ -20,32 +26,17 @@ if (process.env.CORS_ORIGINS) {
   allowedOrigins = allowedOrigins.concat(process.env.CORS_ORIGINS.split(','));
 }
 
-const corsConfig = {
+app.use(cors({
   origin: allowedOrigins,
   allowedHeaders: ['Authorization', 'X-Requested-With', 'Content-Type'],
   maxAge: 86400, // NOTICE: 1 day
   credentials: true,
-};
-
-app.use(morgan('tiny'));
-app.use('/forest/authentication', cors({
-  ...corsConfig,
-  // The null origin is sent by browsers for redirected AJAX calls
-  // we need to support this in authentication routes because OIDC
-  // redirects to the callback route
-  origin: corsConfig.origin.concat('null')
 }));
-app.use(cors(corsConfig));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(jwt({
   secret: process.env.FOREST_AUTH_SECRET,
   credentialsRequired: false,
 }));
-
 
 /* Handle Hasura Actions */
 app.post('/hasura/approve-user', (request, response, next) => {
