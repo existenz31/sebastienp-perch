@@ -10,7 +10,7 @@ const { errorHandler, logger } = require('forest-express');
 const {
   ensureAuthenticated,
   PUBLIC_ROUTES,
-} = require('forest-express-mongoose');
+} = require('forest-express-sequelize');
 
 const app = express();
 
