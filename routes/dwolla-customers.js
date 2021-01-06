@@ -35,5 +35,26 @@ router.get(`/${MODEL_NAME}/:recordId`, permissionMiddlewareCreator.details(), (r
 
 });
 
+router.get(`/${MODEL_NAME}/:recordId/relationships/fundingSources`, (request, response, next) => {
+  const recordId = request.params.recordId;
+  dwollaService.getCustomerFundingSources(recordId, request.query)
+  .then(async result => {
+    const recordSerializer = new RecordSerializer({ name: 'dwollaFundingSources' });
+    const recordsSerialized = await recordSerializer.serialize(result.list);
+    response.send({ ...recordsSerialized, meta:{ count: result.count }});  
+  })
+  .catch(next);
+});
+
+router.get(`/${MODEL_NAME}/:recordId/relationships/transfers`, (request, response, next) => {
+  const recordId = request.params.recordId;
+  dwollaService.getCustomerTransfers(recordId, request.query)
+  .then(async result => {
+    const recordSerializer = new RecordSerializer({ name: 'dwollaTransfers' });
+    const recordsSerialized = await recordSerializer.serialize(result.list);
+    response.send({ ...recordsSerialized, meta:{ count: result.count }});  
+  })
+  .catch(next);
+});
 
 module.exports = router;

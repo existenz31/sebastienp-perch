@@ -13,28 +13,33 @@ class DwollaService {
   } 
 
   getCustomers (query) {
-    const pageSize= parseInt(query.page.size) || 20;
-    const pageNumber= parseInt(query.page.number)-1;
-    const sortBy = query.sort;
+    const limit = parseInt(query.page.size) || 20;
+    const offset = (parseInt(query.page.number) - 1) * limit;
+    const sortBy = query.sort; // Not Supported?
     let fields = query.fields.dwollaCustomers.split(',');
     if (fields && !fields.includes('id')) {
       fields.push('id'); // id is required to get the ID
     }
 
-    let body = {};
+    let opts = {
+      search: query.search,
+      limit,
+      offset,
+    };
     if (query.filters) {
       const filters = JSON.parse(query.filters);
       if (filters.aggregator) {
         for (const filter of filters.conditions) {
-          body[filter.field] = filter.value;
+          opts[filter.field] = filter.value;
         }
       }
       else {
-        body[filters.field] = filters.value;
+        opts[filters.field] = filters.value;
       }
     } 
+
     return this.client.auth.client()
-    .then(appToken => appToken.get('customers', { limit: pageSize }))
+    .then(appToken => appToken.get('customers', opts))
     .then(result => {
       if (!result.body && !result.body._embedded) return null;
       let dwollaCustomers = [];
@@ -72,6 +77,77 @@ class DwollaService {
       return clonePicked;
     });
   }
+
+  getCustomerFundingSources (recordId, query) {
+    // No Pagingation available for this endpoint
+    // const limit = parseInt(query.page.size) || 20;
+    // const offset = (parseInt(query.page.number) - 1) * limit;
+
+    let fields = query.fields.dwollaFundingSources.split(',');
+    if (fields && !fields.includes('id')) {
+      fields.push('id'); // id is required to get the ID
+    }
+    return this.client.auth.client()
+    .then(appToken => appToken.get(`customers/${recordId}/funding-sources`))
+    .then(result => {
+      if (!result.body && !result.body._embedded) return null;
+      let fundingSources = [];
+      // Only populate the fields required by the UI
+      for (const fundingSource of result.body._embedded['funding-sources']) {
+        const clonePicked = _.pick(fundingSource, fields);
+        fundingSources.push(clonePicked);
+      }
+      const count = fundingSources.length;
+      return { list: fundingSources, count }
+    });
+
+  };
+
+  getCustomerTransfers (recordId, query) {
+    const limit = parseInt(query.page.size) || 20;
+    const offset = (parseInt(query.page.number) - 1) * limit;
+    // Sorting not supported yet on related data (hasMany)
+    // const sortBy = query.sort; 
+    let fields = query.fields.dwollaTransfers.split(',');
+    if (fields && !fields.includes('id')) {
+      fields.push('id'); // id is required to get the ID
+    }
+
+    // Filtering not supported yet on related data (hasMany)
+    // if (query.filters) {
+    //   const filters = JSON.parse(query.filters);
+    //   if (filters.aggregator) {
+    //     for (const filter of filters.conditions) {
+    //       opts[filter.field] = filter.value;
+    //     }
+    //   }
+    //   else {
+    //     opts[filters.field] = filters.value;
+    //   }
+    // } 
+
+    let opts = {
+      search: query.search,
+      limit,
+      offset,
+    };
+
+    return this.client.auth.client()
+    .then(appToken => appToken.get(`customers/${recordId}/transfers`, opts))
+    .then(result => {
+      if (!result.body && !result.body._embedded) return null;
+      let transfers = [];
+      // Only populate the fields required by the UI
+      for (const fundingSource of result.body._embedded['transfers']) {
+        const clonePicked = _.pick(fundingSource, fields);
+        transfers.push(clonePicked);
+      }
+      const count = transfers.length;
+      return { list: transfers, count }
+    });
+
+  };
+
 }
 
 module.exports = DwollaService;
