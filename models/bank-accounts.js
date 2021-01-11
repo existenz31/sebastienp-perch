@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       as: 'user',
     });
+
     BankAccounts.hasMany(models.bankTransactions, {
       foreignKey: {
         name: 'bankAccountIdKey',

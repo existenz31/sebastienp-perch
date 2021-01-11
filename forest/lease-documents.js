@@ -6,7 +6,15 @@ const { collection } = require('forest-express-sequelize');
 // - Smart relationships: https://docs.forestadmin.com/documentation/reference-guide/relationships/create-a-smart-relationship
 // - Smart segments: https://docs.forestadmin.com/documentation/reference-guide/segments/smart-segments
 collection('leaseDocuments', {
-  actions: [],
+  actions: [{
+    name: 'Approve Lease',
+    type: 'single',
+    endpoint: '/forest/actions/approve-lease',
+  }, {
+    name: 'Approve Lease Bulk',
+    type: 'bulk',
+    endpoint: '/forest/actions/approve-lease-bulk',
+  }],
   fields: [],
   segments: [],
 });

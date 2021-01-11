@@ -8,6 +8,9 @@ module.exports = (sequelize, DataTypes) => {
     s3Id: {
       type: DataTypes.STRING,
       field: 's3_id',
+    },    
+    status: {
+      type: DataTypes.STRING,
     },
   }, {
     tableName: 'lease_documents',

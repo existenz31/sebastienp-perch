@@ -1,6 +1,8 @@
 const express = require('express');
-const { PermissionMiddlewareCreator } = require('forest-express-sequelize');
-const { leaseDocuments } = require('../models');
+const { PermissionMiddlewareCreator, RecordsGetter } = require('forest-express-sequelize');
+const models = require('../models');
+const { Op } = require('sequelize');
+const _ = require('lodash');
 
 const router = express.Router();
 const permissionMiddlewareCreator = new PermissionMiddlewareCreator('leaseDocuments');
@@ -55,6 +57,78 @@ router.get('/leaseDocuments.csv', permissionMiddlewareCreator.export(), (request
 router.delete('/leaseDocuments', permissionMiddlewareCreator.delete(), (request, response, next) => {
   // Learn what this route does here: https://docs.forestadmin.com/documentation/v/v6/reference-guide/routes/default-routes#delete-a-list-of-records
   next();
+});
+
+let wellickModels = models;
+
+router.post('/actions/approve-lease', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+  const recordId = parseInt(req.body.data.attributes.ids[0]); // I expect the smart action is single
+
+  wellickModels.leaseDocuments.findByPk(recordId)
+  .then((leaseDocument) => {
+    if (!leaseDocument) {
+      res.status(400).send({error: 'Unable to Find Lease Document!'});
+      return;
+    }
+    return leaseDocument.update(
+      { status: 'APPROVED' },
+    );
+  })
+  .then ((leaseDocumentUpdated) => {
+    return wellickModels.leases.update(
+      { status: 'APPROVED' },
+      { 
+        where: {
+          id: leaseDocumentUpdated.leaseIdKey
+        }
+      },
+    );
+})
+  .then(([numberOfAffectedRows]) => {
+    res.send({succes: 'Lease has been approved'});
+  })
+  .catch(error => {
+    console.log(error);
+    next(error);
+  });
+});
+
+router.post('/actions/approve-lease-bulk', permissionMiddlewareCreator.smartAction(), (req, res, next) => {
+  const recordsGetter = new RecordsGetter(wellickModels.leaseDocuments);
+  return recordsGetter.getIdsFromRequest(req)
+  .then((ids) => {
+    return wellickModels.leaseDocuments.findAll({
+      where: {id: {[Op.in]: ids}},
+    });
+  })
+  .then(async (leaseDocumentsFound) => {
+    if (!leaseDocumentsFound || leaseDocumentsFound.length < 1) {
+      res.status(400).send({error: 'Unable to Find Lease Document!'});
+      return;
+    }
+    for (let leaseDocument of leaseDocumentsFound) {
+      // Update all lease documents found (using await because it is a Promise)
+      await leaseDocument.update(
+        { status: 'APPROVED' },
+      );  
+    }
+    return _.uniq(leaseDocumentsFound.map(item => item.leaseIdKey));
+  })
+  .then ((leaseIds) => {
+    return wellickModels.leases.update(
+      { status: 'APPROVED' },
+      { 
+        where:  {id: {[Op.in]: leaseIds}},
+      }
+    );
+  })
+  .then(([numberOfAffectedRows]) => {
+    res.send({succes: 'Lease has been approved'});
+  })
+  .catch(error => {
+    console.log(error);
+    next(error);
+  });
 });
 
 module.exports = router;
