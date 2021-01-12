@@ -85,7 +85,7 @@ router.post('/actions/approve-lease', permissionMiddlewareCreator.smartAction(),
     );
 })
   .then(([numberOfAffectedRows]) => {
-    res.send({succes: 'Lease has been approved'});
+    res.send({success: 'Lease has been approved'});
   })
   .catch(error => {
     console.log(error);
@@ -123,7 +123,7 @@ router.post('/actions/approve-lease-bulk', permissionMiddlewareCreator.smartActi
     );
   })
   .then(([numberOfAffectedRows]) => {
-    res.send({succes: 'Lease has been approved'});
+    res.send({success: 'Lease has been approved'});
   })
   .catch(error => {
     console.log(error);
@@ -131,4 +131,65 @@ router.post('/actions/approve-lease-bulk', permissionMiddlewareCreator.smartActi
   });
 });
 
+router.post(
+  "/actions/approve-lease",
+  permissionMiddlewareCreator.smartAction(),
+  (req, res, next) => {
+    let attrs = req.body.data.attributes.values;
+    let start = attrs["Start Date"];
+    let end = attrs["End Date"];
+    let recordId = req.body.data.attributes.ids[0]
+    console.log(recordId)
+    let token = "";
+    async function makeToken(id) {
+      const poolData = {
+        UserPoolId: "********",
+        ClientId: "*******",
+      };
+      const userPool = new CognitoUserPool(poolData);
+      const authenticationDetails = new AuthenticationDetails({
+        Username: "********",
+        Password: "Password@1",
+      });
+      const cognitoUser = new CognitoUser({
+        Username: "*******",
+        Pool: userPool,
+      });
+      return new Promise((success, error) => {
+        cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: async (result) => {
+            var accessToken = result.getAccessToken().getJwtToken();
+            var idToken = result.idToken.jwtToken;
+            token = idToken;
+            console.log(id)
+              const response = await fetch(`https://stage.getperch.app/`, {
+                method: "post",
+                headers: {
+                  "Authorization": `Bearer ${idToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({query:  `
+                mutation {
+                  approveLeaseDocument(
+                    leaseDocumentID: "${id}"
+                    startDate: "2020-05-20"
+                    endDate: 	"2021-05-20"
+                    ){
+                      leaseID
+                    }
+                  }`
+                }),
+              }).then(res => res.json())
+              .then(res => console.log(res.data))
+          },
+          onFailure: (err) => {
+            console.log("error authenticating", err);
+            error(err);
+          },
+        });
+      });
+    }
+    makeToken(recordId);
+  }
+);
 module.exports = router;
